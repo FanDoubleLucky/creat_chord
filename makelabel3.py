@@ -7,9 +7,9 @@ Created on Sun Jun  3 02:12:39 2018
 
 from xml.etree import ElementTree as ET
 from midi2locationMap import locationMap
-from label import label_list
-import pandas as pd
+from articalLabel import label_list
 import numpy as np
+import pandas as pd
 import os,shutil
 def analyze_tag(note):
     if len(note)==0:
@@ -24,11 +24,10 @@ tag_list = ['measure','measure-attributes-time','measure-note','measure-note-pit
 
 def extract_info(fileName):
     
-    #435_172373ed4f_score_0-1.jpg
-    #'Undertale_-_Megalovania_Piano_Added_guitar_fixed_tonality.xml'
-    fileName = str(fileName)
+    #101_score_01-0.jpg
+    print('fileName',fileName)
     fileId =  fileName.split('_')[0]
-    xmlFile = ET.parse('C:/Users/ZJ/Documents/GitHub/OMR-python/train/'+fileId+'.xml')
+    xmlFile = ET.parse('articalXML/'+fileId+'.musicxml')
     pageNumber = int(fileName.split('score_')[1].split('-')[0])
     lineNumber = int(fileName.split('.')[0].split('-')[1])
     s_e_measure = []
@@ -95,15 +94,17 @@ def extract_info(fileName):
     [startMeasure, endMeasure] = page_measure[pageNumber][lineNumber]
     everyline_label = []
     line_head = 1
-    measure_width = 1
-    first_measureNum = 1
-    first_measureNum_flag = 1
+    #measure_width = 1
+    #first_measureNum = 1
+    #first_measureNum_flag = 1
     for measure in root.iter("measure"):
         clefofthismea = ''
         measureNum = int(measure.attrib['number'])
+        '''
         if first_measureNum_flag==1:
             first_measureNum = measureNum
         first_measureNum_flag = 0
+        
         for (key,value) in measure.attrib.items():
             if key =='width':
                 measure_width = float(value)
@@ -112,15 +113,16 @@ def extract_info(fileName):
         for muti_rest  in measure.iter('multiple-rest'):
             muti_rest_flag = 1
         if measureNum>=startMeasure and (measureNum<=endMeasure or endMeasure ==-1) and (measure_width>0 or (measure_width==0 and measureNum==first_measureNum) or muti_rest_flag == 1):
-            
-                
+        '''
+        if (measureNum>=startMeasure) and (measureNum<=endMeasure or endMeasure ==-1):
+        
             for i in range(0, len(clefs)):
                 [clef_measure, clef_info] = clefs[i]
                 if measureNum>=clef_measure and (i+1 == len(clefs) or measureNum<clefs[i+1][0]):
                     clefofthismea = 'clef'+clef_info
                     if measureNum==clef_measure or line_head == 1: 
                         everyline_label.append('clef'+clef_info)
-            
+                        everyline_label.append('break')#add one break
             
             
             
@@ -130,6 +132,7 @@ def extract_info(fileName):
                     if measureNum>=key_fifth_measure and (i+1 == len(key_fifth) or measureNum<key_fifth[i+1][0]):
                         if measureNum==key_fifth_measure or line_head == 1: 
                             everyline_label.append(key_fifth_info)
+                            everyline_label.append('break')#add one break
                             
                 head_barline = 0
                 for barline in measure.iter('barline'):
@@ -140,7 +143,8 @@ def extract_info(fileName):
                             barline_info = barline_info + bar_style.text
                         for repeat in barline.iter('repeat'):
                             barline_info = barline_info + '_' + repeat.attrib['direction']
-                        everyline_label.append(barline_info)    
+                        everyline_label.append(barline_info)
+                        everyline_label.append('break')#add one break
                 
                 
                 if head_barline ==1:
@@ -166,7 +170,7 @@ def extract_info(fileName):
                         for repeat in barline.iter('repeat'):
                             barline_info = barline_info + '_' + repeat.attrib['direction']
                         everyline_label.append(barline_info)    
-                
+                        everyline_label.append('break')#add one break
                 
                 if head_barline ==1:
                     try:
@@ -185,18 +189,23 @@ def extract_info(fileName):
                     if measureNum>=key_fifth_measure and (i+1 == len(key_fifth) or measureNum<key_fifth[i+1][0]):
                         if measureNum==key_fifth_measure or line_head == 1: 
                             everyline_label.append(key_fifth_info)
+                            everyline_label.append('break')#add one break
                         
                         
             for i in range(0, len(times)):
                 [time_measure, time_info] = times[i]
                 if measureNum==time_measure: 
                     everyline_label.append(time_info)
+                    everyline_label.append('break')#add one break
             
             
             
             for note in measure.iter('note'):
                 
-                
+                if len(list(note.iter('chord'))) == 0:
+                    if everyline_label[len(everyline_label)-1] != 'break':   
+                        everyline_label.append('break')#add one break
+                ''' no tie and slur
                 for notations in note.iter('notations'):
                     for tied in notations.iter('tied'):
                         tied_info = tied.attrib['type']
@@ -209,7 +218,7 @@ def extract_info(fileName):
                         tied_info = tied.attrib['type']
                         if tied_info == 'stop':
                             everyline_label.append('slur'+tied_info)
-                            
+                '''            
                             
                 fermata_info = ''
                 articulations_info = ''
@@ -284,7 +293,7 @@ def extract_info(fileName):
                     everyline_label.append('dot')    
                     
                     
-                    
+                '''  
                 for notations in note.iter('notations'):
                     for tied in notations.iter('tied'):
                         tied_info = tied.attrib['type']
@@ -297,7 +306,7 @@ def extract_info(fileName):
                         tied_info = tied.attrib['type']
                         if tied_info == 'start':
                             everyline_label.append('slur'+tied_info)
-                            
+                '''         
             
             special_bar = 0
             for barline in measure.iter('barline'):
@@ -309,11 +318,11 @@ def extract_info(fileName):
                     for repeat in barline.iter('repeat'):
                         barline_info = barline_info + '_' + repeat.attrib['direction']
                     everyline_label.append(barline_info)    
-            
+                    everyline_label.append('break')
             
             if special_bar == 0:
                 everyline_label.append('bar:line-end')  
-            
+                everyline_label.append('break')  
             line_head = 0        
                 
     '''  
@@ -340,13 +349,12 @@ def extract_info(fileName):
     print(times)
     print(page_measure)
     '''
-    labels = np.zeros((len(everyline_label),256))
+    labels = np.zeros((len(everyline_label),254))
     i = 0
     for oneSymbol in everyline_label:
         if label_list.__contains__(oneSymbol):
             labels[i][label_list.index(oneSymbol)] = 1
-        labels[i][254] = pageNumber
-        labels[i][255] = lineNumber
+        
         i = i+1
 
     df = pd.DataFrame(labels,columns = label_list)
@@ -372,18 +380,18 @@ def extract_info(fileName):
         #print('pitch',tag_info)
     
 if __name__ == "__main__":    
-    pathDir = os.listdir('./segmentLines')
+    pathDir = os.listdir('./testPNG')
     errorExtract = open('errorExtract.txt','w')
     for path_name in pathDir:
-        try:
-            error_file = ''
-            line_pictures = os.listdir('./segmentLines/'+path_name)
-            for picture_name in line_pictures:
-                error_file = picture_name
-                everyline_label = extract_info(picture_name)
-                pass
-        except Exception as e:
-            errorExtract.write(error_file+' '+str(e.args))
-            errorExtract.write('\n')
+        #try:
+        error_file = ''
+        line_pictures = os.listdir('./testPNG/'+path_name)
+        for picture_name in line_pictures:
+            error_file = picture_name
+            everyline_label = extract_info(picture_name)
+                #pass
+        #except Exception as e:
+            #errorExtract.write(error_file+' '+str(e.args))
+            #errorExtract.write('\n')
     errorExtract.close()
 #page_measure, clefs= extract_info('1185866_8bac7d2bef_score_0-0.jpg','train/1185866.xml')
