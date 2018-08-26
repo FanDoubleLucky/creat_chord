@@ -391,3 +391,28 @@ locationMap = {
         
         
         }
+
+clefG2Map = {'clefG2-F6':1,
+'clefG2-E6':2,
+'clefG2-D6':3,
+'clefG2-C6':4,
+'clefG2-B5':5,
+'clefG2-A5':6,
+'clefG2-G5':7,
+'clefG2-F5':8,
+'clefG2-E5':9,
+'clefG2-D5':10,
+'clefG2-C5':11,
+'clefG2-B4':12,
+'clefG2-A4':13,
+'clefG2-G4':14,
+'clefG2-F4':15,
+'clefG2-E4':16,
+'clefG2-D4':17,
+'clefG2-C4':18,
+'clefG2-B3':19,
+'clefG2-A3':20,
+'clefG2-G3':21,
+'clefG2-F3':22,
+'clefG2-E3':23
+}
