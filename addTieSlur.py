@@ -103,21 +103,26 @@ def add_random_element(file_url):
                             break
                         # location = locationMap[clef + pitch[0].text + pitch[1].text]
                         location = locationMap[location_key]
-                    if location <= 11:
+                    """
+                    if location <= 1:
                         location = location + random.randint(1, 7)
                     else:
                         location = location - random.randint(1, 7)
+                    """
+                    if location <= 17:
+                        sink_dis = [1, 2, 2, 3, 3, 4, 5]
+                        location = location + sink_dis[random.randint(0, 6)]
 
-                    midi = inverseclefG2Map[location].split(clef)[1]
-                    new_note = copy.deepcopy(measure[i])
-                    chord = ET.Element('chord')
-                    new_note.attrib = {}
-                    if len(list(new_note.iter('chord'))) == 0:
-                        new_note.insert(0, chord)
-                    for pitch in new_note.iter('pitch'):
-                        pitch[0].text = midi[0]
-                        pitch[1].text = midi[1]
-                    measure.insert(i + 1, new_note)
+                        midi = inverseclefG2Map[location].split(clef)[1]
+                        new_note = copy.deepcopy(measure[i])
+                        chord = ET.Element('chord')
+                        new_note.attrib = {}
+                        if len(list(new_note.iter('chord'))) == 0:
+                            new_note.insert(0, chord)
+                        for pitch in new_note.iter('pitch'):
+                            pitch[0].text = midi[0]
+                            pitch[1].text = midi[1]
+                        measure.insert(i + 1, new_note)
                 elif choice >= 2:
                     # note add tempHL 3/20
                     choice = random.randint(1, 20)
@@ -206,9 +211,10 @@ def add_random_element(file_url):
     note_list = list(old_root.iter('note'))
     for i in range(0, len(note_list)):
         choice = random.randint(1, 15)
-        if choice <= 1 and len(list(note_list[i].iter('notations'))) == 0 and len(list(note_list[i].iter('alter'))) == 0: # 1/20
+        if choice <= 1 and len(list(note_list[i].iter('notations'))) == 0 and len(
+                list(note_list[i].iter('alter'))) == 0:  # 1/20
             j = i + 1
-            while j in range(i + 1, i + 10) and j < len(note_list)-1:
+            while j in range(i + 1, i + 10) and j < len(note_list) - 1:
                 if len(list(note_list[j].iter('notations'))) == 0:
                     pitch_info_i = ''
                     for pitch_i in note_list[i].iter('pitch'):
@@ -239,7 +245,7 @@ def add_random_element(file_url):
                         notations_j.append(tie_j)
                         note_list[j].append(notations_j)
                         break
-                j+=1;
+                j += 1;
     xml_file.write('artificialXML/' + file_url.split('/')[1])
 
 
